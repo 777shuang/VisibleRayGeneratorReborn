@@ -1,0 +1,13 @@
+{
+  "itemGroup.visibleraygenerator": "Example Mod Tab",
+  "block.visibleraygenerator.example_block": "Example Block",
+  "item.visibleraygenerator.example_item": "Example Item",
+
+  "visibleraygenerator.configuration.title": "VisibleRayGeneratorReborn Configs",
+  "visibleraygenerator.configuration.section.visibleraygenerator.common.toml": "VisibleRayGeneratorReborn Configs",
+  "visibleraygenerator.configuration.section.visibleraygenerator.common.toml.title": "VisibleRayGeneratorReborn Configs",
+  "visibleraygenerator.configuration.items": "Item List",
+  "visibleraygenerator.configuration.logDirtBlock": "Log Dirt Block",
+  "visibleraygenerator.configuration.magicNumberIntroduction": "Magic Number Text",
+  "visibleraygenerator.configuration.magicNumber": "Magic Number"
+}
