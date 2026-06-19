@@ -13,75 +13,57 @@ import net.minecraft.world.level.block.state.BlockState
 import net.neoforged.neoforge.capabilities.Capabilities
 import net.neoforged.neoforge.energy.IEnergyStorage
 
-class GeneratorEnergyStorage(val capacity: Int, val maxExtract: Int) : IEnergyStorage {
+class GeneratorEnergyStorage(private val capacity: Int = 1_000) : IEnergyStorage {
   private var energy = 0
-
   fun generate(amount: Int) {
     energy = (energy + amount).coerceAtMost(capacity)
   }
 
-  override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int = 0
-
+  override fun receiveEnergy(maxReceive: Int, simulate: Boolean) = 0
   override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
-    val extracted = maxExtract.coerceAtMost(energy).coerceAtMost(this.maxExtract)
-    if (!simulate) {
-      energy -= extracted
-    }
+    val extracted = maxExtract.coerceAtMost(energy)
+    if (!simulate) energy -= extracted
     return extracted
   }
 
-  override fun getEnergyStored(): Int = energy
-
-  override fun getMaxEnergyStored(): Int = capacity
-
-  override fun canExtract(): Boolean = true
-
-  override fun canReceive(): Boolean = false
+  override fun getEnergyStored() = energy
+  override fun getMaxEnergyStored() = capacity
+  override fun canExtract() = true
+  override fun canReceive() = false
 }
 
-class GeneratorBlock(properties: BlockBehaviour.Properties) : Block(properties), EntityBlock {
-  override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity {
-    return Generator(pos, state)
-  }
-
+// Block that creates the Generator BlockEntity
+class GeneratorBlock(props: BlockBehaviour.Properties) : Block(props), EntityBlock {
+  override fun newBlockEntity(pos: BlockPos, state: BlockState) = Generator(pos, state)
   override fun <T : BlockEntity> getTicker(
     level: Level,
     state: BlockState,
     type: BlockEntityType<T>
-  ): BlockEntityTicker<T>? {
-    if (level.isClientSide) return null
-    return BlockEntityTicker { lvl, pos, st, blockEntity ->
-      if (blockEntity is Generator) {
-        blockEntity.tick(lvl, pos, st)
-      }
+  ): BlockEntityTicker<T>? =
+    if (level.isClientSide) null
+    else BlockEntityTicker { _, pos, _, be ->
+      (be as? Generator)?.tick(level, pos)
     }
-  }
 }
 
+// BlockEntity that generates and pushes 1 FE each tick
 class Generator(pos: BlockPos, blockState: BlockState) : BlockEntity(Register.GENERATOR_BE.get(), pos, blockState) {
-  val energy = GeneratorEnergyStorage(1000, 1)
-
-  fun tick(level: Level, pos: BlockPos, state: BlockState) {
+  val energy = GeneratorEnergyStorage()
+  fun tick(level: Level, pos: BlockPos) {
     if (level.isClientSide) return
-
-    // 毎Tick 1 FE 発電する
     energy.generate(1)
-
-    // 隣接するブロックにエネルギーを分配する
-    for (direction in Direction.entries) {
-      if (energy.energyStored <= 0) break
-
-      val neighborPos = pos.relative(direction)
-      val neighborEnergy = level.getCapability<IEnergyStorage, Direction?>(
+    for (dir in Direction.entries) {
+      if (energy.energyStored == 0) break
+      val neighbor = level.getCapability<IEnergyStorage, Direction?>(
         Capabilities.EnergyStorage.BLOCK,
-        neighborPos,
-        direction.opposite
-      )
-      if (neighborEnergy != null && neighborEnergy.canReceive()) {
-        val accepted = neighborEnergy.receiveEnergy(1, false)
-        if (accepted > 0) {
-          energy.extractEnergy(accepted, false)
-          break // 1 FE出力したためこのTickの送電は終了
+        pos.relative(dir),
+        dir.opposite
+      ) ?: continue
+      if (neighbor.canReceive()) {
+        val sent = neighbor.receiveEnergy(1, false)
+        if (sent > 0) {
+          energy.extractEnergy(sent, false)
+          break
         }
       }
     }
