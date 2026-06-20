@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "grade=0": {
+      "model": "visibleraygenerator:block/gen4"
+    },
+    "grade=1": {
+      "model": "visibleraygenerator:block/gen5"
+    },
+    "grade=2": {
+      "model": "visibleraygenerator:block/gen6"
+    },
+    "grade=3": {
+      "model": "visibleraygenerator:block/gen7"
+    },
+    "grade=4": {
+      "model": "visibleraygenerator:block/gen8"
+    },
+    "grade=5": {
+      "model": "visibleraygenerator:block/gen9"
+    },
+    "grade=6": {
+      "model": "visibleraygenerator:block/gen10"
+    },
+    "grade=7": {
+      "model": "visibleraygenerator:block/gen11"
+    },
+    "grade=8": {
+      "model": "visibleraygenerator:block/gen12"
+    },
+    "grade=9": {
+      "model": "visibleraygenerator:block/gen13"
+    }
+  }
+}

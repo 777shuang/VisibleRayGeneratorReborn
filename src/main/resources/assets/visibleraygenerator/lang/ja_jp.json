@@ -1,6 +1,7 @@
 {
   "itemGroup.visibleraygenerator": "VisibleRayGenerator Reborn",
   "block.visibleraygenerator.dummy_solar": "はりぼてソーラー",
+  "block.visibleraygenerator.vrgenerator": "永久光発電機",
   "visibleraygenerator.configuration.title": "VisibleRayGeneratorReborn Configs",
   "visibleraygenerator.configuration.section.visibleraygenerator.common.toml": "VisibleRayGeneratorReborn Configs",
   "visibleraygenerator.configuration.section.visibleraygenerator.common.toml.title": "VisibleRayGeneratorReborn Configs",

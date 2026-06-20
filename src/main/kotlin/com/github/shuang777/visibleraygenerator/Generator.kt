@@ -22,7 +22,7 @@ class GeneratorBlock : Block, EntityBlock {
     val NUMBER_OF_GRADE = energyGenerrationDifferenceSequence.size+1
 
     // 発電機の等級
-    val GRADE = IntegerProperty.create("generate_fe", 0, energyGenerrationDifferenceSequence.size)
+    val GRADE = IntegerProperty.create("grade", 0, energyGenerrationDifferenceSequence.size)
 
     // 実際の発電量[FE]
     val amountOfGeneration by lazy {

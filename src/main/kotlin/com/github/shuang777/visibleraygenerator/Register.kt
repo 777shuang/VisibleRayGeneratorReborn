@@ -32,9 +32,9 @@ object Register {
     Block(BlockBehaviour.Properties.of().sound(SoundType.METAL))
   })
 
-  val TEST_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("dummy_solar", DUMMY_SOLAR)
+  val DUMMY_SOLAR_ITEM = ITEMS.registerSimpleBlockItem("dummy_solar", DUMMY_SOLAR)
 
-  val VISIBLE_RAY_GENERATOR = BLOCKS.register("visible_ray_generator", Supplier {
+  val VISIBLE_RAY_GENERATOR = BLOCKS.register("vrgenerator", Supplier {
     GeneratorBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL))
   })
 
@@ -50,7 +50,7 @@ object Register {
   }
 
   val GENERATOR_BE: DeferredHolder<BlockEntityType<*>, BlockEntityType<GeneratorBlockEntity>> =
-    BLOCK_ENTITIES.register("generator", Supplier {
+    BLOCK_ENTITIES.register("vrgenerator", Supplier {
       BlockEntityType.Builder.of(::GeneratorBlockEntity, VISIBLE_RAY_GENERATOR.get()).build(null)
     })
 
@@ -60,7 +60,7 @@ object Register {
       .withTabsBefore(CreativeModeTabs.COMBAT)
       .icon(Items.CRAFTER::getDefaultInstance)
       .displayItems { parameters, output ->
-        output.accept(TEST_BLOCK_ITEM)
+        output.accept(DUMMY_SOLAR_ITEM)
         for (visibleRayGeneratorItem in VISIBLE_RAY_GENERATOR_ITEMS) {
           output.accept(visibleRayGeneratorItem)
         }

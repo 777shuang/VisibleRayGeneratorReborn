@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "visibleraygenerator:block/gentop11",
+    "bottom": "visibleraygenerator:block/genbottom11",
+    "side": "visibleraygenerator:block/genside11"
+  }
+}
