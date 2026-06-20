@@ -13,49 +13,29 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.neoforged.neoforge.capabilities.Capabilities
-import net.neoforged.neoforge.energy.IEnergyStorage
-
-class GeneratorEnergyStorage(private val capacity: Int = Int.MAX_VALUE) : IEnergyStorage {
-  private var energy = 0
-  fun generate(amount: Int) {
-    energy = (energy + amount).coerceAtMost(capacity)
-  }
-
-  override fun receiveEnergy(maxReceive: Int, simulate: Boolean) = 0
-  override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
-    val extracted = maxExtract.coerceAtMost(energy)
-    if (!simulate) energy -= extracted
-    return extracted
-  }
-
-  override fun getEnergyStored() = energy
-  override fun getMaxEnergyStored() = capacity
-  override fun canExtract() = true
-  override fun canReceive() = false
-}
 
 // Block that creates the Generator BlockEntity
 class GeneratorBlock : Block, EntityBlock {
   companion object {
     // 発電機の等級が上がるごとに発電量が何倍されるか，という階比数列
-    private val energyGenerrationDifferenceSequence = arrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4)
-    val NUMBER_OF_GRADE = energyGenerrationDifferenceSequence.size + 1
+    private val energyGenerrationDifferenceSequence = arrayOf(2, 4, 4, 4, 4, 4, 4, 4, 4)
+    val NUMBER_OF_GRADE = energyGenerrationDifferenceSequence.size+1
 
     // 発電機の等級
     val GRADE = IntegerProperty.create("generate_fe", 0, energyGenerrationDifferenceSequence.size)
 
     // 実際の発電量[FE]
-    val amount by lazy {
-      var amount_ = Array<Int>(NUMBER_OF_GRADE) { Config.BASE_ENERGY_GENERATION.get() }
+    val amountOfGeneration by lazy {
+      var amount = Array<Int>(NUMBER_OF_GRADE) { Config.BASE_ENERGY_GENERATION.get() }
       for (i in 1..energyGenerrationDifferenceSequence.size) {
-        amount_[i] = amount_[i - 1] * energyGenerrationDifferenceSequence[i - 1];
+        amount[i] = amount[i-1] * energyGenerrationDifferenceSequence[i-1];
       }
-      return@lazy amount_
+      return@lazy amount
     }
   }
 
   constructor(props: BlockBehaviour.Properties) : super(props) {
-    //registerDefaultState(stateDefinition.any().setValue(GRADE, 0))
+    registerDefaultState(stateDefinition.any().setValue(GRADE, 0))
   }
 
   override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -64,44 +44,29 @@ class GeneratorBlock : Block, EntityBlock {
 
   override fun newBlockEntity(pos: BlockPos, state: BlockState) = GeneratorBlockEntity(pos, state)
   override fun <T : BlockEntity> getTicker(
-    level: Level,
-    state: BlockState,
-    type: BlockEntityType<T>
+    level: Level, state: BlockState, type: BlockEntityType<T>
   ): BlockEntityTicker<T>? =
     if (level.isClientSide) null
-    else BlockEntityTicker { _, pos, _, be ->
-      (be as? GeneratorBlockEntity)?.tick(level, pos)
-    }
+    else BlockEntityTicker { _, pos, _, be -> (be as? GeneratorBlockEntity)?.tick(level, pos) }
 }
 
-// BlockEntity that generates and pushes 1 FE each tick
+// BlockEntity that generates and pushes FE each tick
 class GeneratorBlockEntity : BlockEntity {
-
-  val generateEnergy: Int
+  // 毎tick周囲の機械に供給するエネルギー
+  val generateEnergy: Int by lazy { GeneratorBlock.amountOfGeneration[blockState.getValue(GeneratorBlock.GRADE)] }
 
   constructor(pos: BlockPos, blockState: BlockState) : super(Register.GENERATOR_BE.get(), pos, blockState) {
-    generateEnergy = GeneratorBlock.amount[blockState.getValue(GeneratorBlock.GRADE)]
-    VisibleRayGeneratorReborn.LOGGER.debug("GenerateEnergy: ${GeneratorBlock.amount.joinToString()}}")
   }
 
-  val energy = GeneratorEnergyStorage()
   fun tick(level: Level, pos: BlockPos) {
     if (level.isClientSide) return
 
-    energy.generate(generateEnergy)
     for (dir in Direction.entries) {
-      if (energy.energyStored == 0) break
-      val neighbor = level.getCapability<IEnergyStorage, Direction?>(
-        Capabilities.EnergyStorage.BLOCK,
-        pos.relative(dir),
-        dir.opposite
-      ) ?: continue
+      val neighbor =
+        level.getCapability(Capabilities.EnergyStorage.BLOCK, pos.relative(dir), dir.opposite) ?: continue
       if (neighbor.canReceive()) {
-        val sent = neighbor.receiveEnergy(energy.energyStored, false)
-        if (sent > 0) {
-          energy.extractEnergy(sent, false)
-          break
-        }
+        neighbor.receiveEnergy(generateEnergy, false)
+        break
       }
     }
   }
