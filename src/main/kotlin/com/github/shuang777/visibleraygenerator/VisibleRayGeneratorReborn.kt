@@ -2,8 +2,6 @@ package com.github.shuang777.visibleraygenerator
 
 import com.mojang.logging.LogUtils
 import net.minecraft.core.Direction
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.world.level.block.Blocks
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
@@ -32,27 +30,22 @@ class VisibleRayGeneratorReborn(modEventBus: IEventBus, modContainer: ModContain
   }
 
   private fun commonSetup(event: FMLCommonSetupEvent) {
-    LOGGER.info("HELLO FROM COMMON SETUP")
-    if (Config.LOG_DIRT_BLOCK.get()) {
-      LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT))
-    }
-    LOGGER.info("{}{}", Config.MAGIC_NUMBER_INTRODUCTION.get(), Config.MAGIC_NUMBER.get())
+    //LOGGER.info("HELLO FROM COMMON SETUP")
+    /*LOGGER.info("{}{}", Config.MAGIC_NUMBER_INTRODUCTION.get(), Config.MAGIC_NUMBER.get())
     Config.ITEM_STRINGS.get().forEach { item ->
       LOGGER.info("ITEM >> {}", item)
-    }
+    }*/
   }
 
   private fun registerCapabilities(event: RegisterCapabilitiesEvent) {
-    event.registerBlockEntity<IEnergyStorage, Direction?, Generator>(
+    event.registerBlockEntity<IEnergyStorage, Direction?, GeneratorBlockEntity>(
       Capabilities.EnergyStorage.BLOCK,
       Register.GENERATOR_BE.get()
-    ) { generator, side ->
-      generator.energy
-    }
+    ) { generator, side -> generator.energy }
   }
 
   @SubscribeEvent
   fun onServerStarting(event: ServerStartingEvent) {
-    LOGGER.info("HELLO from server starting")
+    //LOGGER.info("HELLO from server starting")
   }
 }

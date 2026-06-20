@@ -7,21 +7,21 @@ import net.neoforged.neoforge.common.ModConfigSpec
 object Config {
   private val BUILDER = ModConfigSpec.Builder()
 
-  val LOG_DIRT_BLOCK: ModConfigSpec.BooleanValue = BUILDER
-    .comment("Whether to log the dirt block on common setup")
-    .define("logDirtBlock", true)
+  val BASE_ENERGY_GENERATION = BUILDER
+    .comment("Base environment generator")
+    .defineInRange("base_enegy_generation", 1, 0, Int.MAX_VALUE)
+  /*
+    val MAGIC_NUMBER: ModConfigSpec.IntValue = BUILDER
+      .comment("A magic number")
+      .defineInRange("magicNumber", 42, 0, Int.MAX_VALUE)
 
-  val MAGIC_NUMBER: ModConfigSpec.IntValue = BUILDER
-    .comment("A magic number")
-    .defineInRange("magicNumber", 42, 0, Int.MAX_VALUE)
+    val MAGIC_NUMBER_INTRODUCTION: ModConfigSpec.ConfigValue<String> = BUILDER
+      .comment("What you want the introduction message to be for the magic number")
+      .define("magicNumberIntroduction", "The magic number is... ")
 
-  val MAGIC_NUMBER_INTRODUCTION: ModConfigSpec.ConfigValue<String> = BUILDER
-    .comment("What you want the introduction message to be for the magic number")
-    .define("magicNumberIntroduction", "The magic number is... ")
-
-  val ITEM_STRINGS: ModConfigSpec.ConfigValue<List<String>> = BUILDER
-    .comment("A list of items to log on common setup.")
-    .defineListAllowEmpty("items", listOf("minecraft:iron_ingot"), { "" }, ::validateItemName)
+    val ITEM_STRINGS: ModConfigSpec.ConfigValue<List<String>> = BUILDER
+      .comment("A list of items to log on common setup.")
+      .defineListAllowEmpty("items", listOf("minecraft:iron_ingot"), { "" }, ::validateItemName)*/
 
   val SPEC: ModConfigSpec = BUILDER.build()
 
