@@ -1,11 +1,11 @@
 package com.github.shuang777.visibleraygenerator
 
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
-import net.minecraft.world.item.CreativeModeTab
-import net.minecraft.world.item.CreativeModeTabs
-import net.minecraft.world.item.Items
+import net.minecraft.world.item.*
+import net.minecraft.world.item.component.BlockItemStateProperties
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.entity.BlockEntityType
@@ -35,10 +35,19 @@ object Register {
   val TEST_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("dummy_solar", DUMMY_SOLAR)
 
   val VISIBLE_RAY_GENERATOR = BLOCKS.register("visible_ray_generator", Supplier {
-    GeneratorBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL), 0)
+    GeneratorBlock(BlockBehaviour.Properties.of().sound(SoundType.METAL))
   })
 
-  val VISIBLE_RAY_GENERATOR_ITEM = ITEMS.registerSimpleBlockItem("visible_ray_generator", VISIBLE_RAY_GENERATOR)
+  val VISIBLE_RAY_GENERATOR_ITEMS = (0..<GeneratorBlock.NUMBER_OF_GRADE).map { i ->
+    ITEMS.registerItem("vrgenerator$i", {
+      BlockItem(
+        VISIBLE_RAY_GENERATOR.get(), Item.Properties().component(
+          DataComponents.BLOCK_STATE,
+          BlockItemStateProperties.EMPTY.with(GeneratorBlock.GRADE, i)
+        )
+      )
+    })
+  }
 
   val GENERATOR_BE: DeferredHolder<BlockEntityType<*>, BlockEntityType<GeneratorBlockEntity>> =
     BLOCK_ENTITIES.register("generator", Supplier {
@@ -52,7 +61,9 @@ object Register {
       .icon(Items.CRAFTER::getDefaultInstance)
       .displayItems { parameters, output ->
         output.accept(TEST_BLOCK_ITEM)
-        output.accept(VISIBLE_RAY_GENERATOR_ITEM)
+        for (visibleRayGeneratorItem in VISIBLE_RAY_GENERATOR_ITEMS) {
+          output.accept(visibleRayGeneratorItem)
+        }
       }.build()
   })
 }

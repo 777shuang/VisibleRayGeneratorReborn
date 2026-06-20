@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.neoforged.neoforge.capabilities.Capabilities
 import net.neoforged.neoforge.energy.IEnergyStorage
 
-class GeneratorEnergyStorage(private val capacity: Int = 1_000) : IEnergyStorage {
+class GeneratorEnergyStorage(private val capacity: Int = Int.MAX_VALUE) : IEnergyStorage {
   private var energy = 0
   fun generate(amount: Int) {
     energy = (energy + amount).coerceAtMost(capacity)
@@ -39,13 +39,14 @@ class GeneratorBlock : Block, EntityBlock {
   companion object {
     // 発電機の等級が上がるごとに発電量が何倍されるか，という階比数列
     private val energyGenerrationDifferenceSequence = arrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4)
+    val NUMBER_OF_GRADE = energyGenerrationDifferenceSequence.size + 1
 
     // 発電機の等級
     val GRADE = IntegerProperty.create("generate_fe", 0, energyGenerrationDifferenceSequence.size)
 
     // 実際の発電量[FE]
     val amount by lazy {
-      val amount_ = Array<Int>(energyGenerrationDifferenceSequence.size + 1) { Config.BASE_ENERGY_GENERATION.get() };
+      var amount_ = Array<Int>(NUMBER_OF_GRADE) { Config.BASE_ENERGY_GENERATION.get() }
       for (i in 1..energyGenerrationDifferenceSequence.size) {
         amount_[i] = amount_[i - 1] * energyGenerrationDifferenceSequence[i - 1];
       }
@@ -53,8 +54,8 @@ class GeneratorBlock : Block, EntityBlock {
     }
   }
 
-  constructor(props: BlockBehaviour.Properties, grade: Int) : super(props) {
-    registerDefaultState(stateDefinition.any().setValue(GRADE, grade))
+  constructor(props: BlockBehaviour.Properties) : super(props) {
+    //registerDefaultState(stateDefinition.any().setValue(GRADE, 0))
   }
 
   override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -80,11 +81,13 @@ class GeneratorBlockEntity : BlockEntity {
 
   constructor(pos: BlockPos, blockState: BlockState) : super(Register.GENERATOR_BE.get(), pos, blockState) {
     generateEnergy = GeneratorBlock.amount[blockState.getValue(GeneratorBlock.GRADE)]
+    VisibleRayGeneratorReborn.LOGGER.debug("GenerateEnergy: ${GeneratorBlock.amount.joinToString()}}")
   }
 
   val energy = GeneratorEnergyStorage()
   fun tick(level: Level, pos: BlockPos) {
     if (level.isClientSide) return
+
     energy.generate(generateEnergy)
     for (dir in Direction.entries) {
       if (energy.energyStored == 0) break
@@ -94,7 +97,7 @@ class GeneratorBlockEntity : BlockEntity {
         dir.opposite
       ) ?: continue
       if (neighbor.canReceive()) {
-        val sent = neighbor.receiveEnergy(1, false)
+        val sent = neighbor.receiveEnergy(energy.energyStored, false)
         if (sent > 0) {
           energy.extractEnergy(sent, false)
           break
